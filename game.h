@@ -6,9 +6,12 @@
 #define PLAYER1 0
 #define PLAYER2 1
 
-#define GAME_DRAWN 0
-#define GAME_WON_BY_PLAYER1 -1
-#define GAME_WON_BY_PLAYER2 1
+typedef enum {
+    GAME_NOT_FINISHED,
+    GAME_DRAWN,
+    GAME_WON_BY_PLAYER1,
+    GAME_WON_BY_PLAYER2
+} GameState;
 
 typedef struct Move Move;
 
@@ -16,8 +19,10 @@ typedef struct Game {
     char player1[11];
     char player2[11];
     bool player_turn;
-    void *game_state;
-    void *extra;
+    void *board;
+    GameState result;
+    void *extra1;
+    void *extra2;
 } Game;
 
 void setup_players(Game *);
@@ -30,9 +35,7 @@ void make_move(Game *, Move *);
 
 Move *get_move(Game *);
 
-bool is_game_over(Game *);
-
-int get_game_result(Game *);
+GameState is_game_over(Game *);
 
 void print_game_state(Game *);
 

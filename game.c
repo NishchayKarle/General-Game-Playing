@@ -17,7 +17,7 @@ int main() {
     printf("INITIAL GAME STATE: \n");
     print_game_state(game);
 
-    while (!is_game_over(game)) {
+    while (is_game_over(game) == GAME_NOT_FINISHED) {
         game->player_turn = player_turn;
         Move *move = get_move(game);
 
@@ -28,9 +28,7 @@ int main() {
         }
     }
 
-    int game_result = get_game_result(game);
-
-    switch (game_result) {
+    switch (game->result) {
         case GAME_DRAWN:
             printf("GAME DRAWN\n");
             break;
@@ -41,6 +39,10 @@ int main() {
 
         case GAME_WON_BY_PLAYER2:
             printf("PLAYER 2 - %s WON\n", game->player2);
+            break;
+
+        default:
+            printf("ERROR: Game Result not set after the game is finished\n");
             break;
     }
 

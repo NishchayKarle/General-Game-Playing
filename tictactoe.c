@@ -22,7 +22,7 @@ void create_and_set_game_state(Game *g) {
     char *board = (char *)malloc(sizeof(char) * 10);
     memset(board, '\0', 10);
 
-    g->game_state = (void *)board;
+    g->board = (void *)board;
 }
 
 bool is_valid_move(Game *g, Move *m) {
@@ -33,7 +33,7 @@ bool is_valid_move(Game *g, Move *m) {
         return false;
     }
 
-    char *board = (char *)g->game_state;
+    char *board = (char *)g->board;
 
     if (board[m->i * 3 + m->j] != '\0') {
         printf(
@@ -47,7 +47,7 @@ bool is_valid_move(Game *g, Move *m) {
 }
 
 void make_move(Game *g, Move *m) {
-    char *board = (char *)g->game_state;
+    char *board = (char *)g->board;
     int index = m->i * 3 + m->j;
 
     char symbol = g->player_turn == PLAYER1 ? 'X' : 'O';
@@ -57,7 +57,7 @@ void make_move(Game *g, Move *m) {
 }
 
 Move *get_move(Game *g) {
-    Move *move = (Move *)malloc(sizeof(Move));
+    Move *m = (Move *)malloc(sizeof(Move));
     char input[10];
     printf("Please enter your move in the format 'row,column' (e.g., 1,2):\n");
 
@@ -68,10 +68,10 @@ Move *get_move(Game *g) {
         if (fgets(input, sizeof(input), stdin) != NULL) {
             input[strcspn(input, "\n")] = '\0';
 
-            if (sscanf(input, "%d,%d", &move->i, &move->j) == 2) {
-                move->i -= 1;
-                move->j -= 1;
-                return move;
+            if (sscanf(input, "%d,%d", &m->i, &m->j) == 2) {
+                m->i -= 1;
+                m->j -= 1;
+                return m;
             } else {
                 printf(
                     "Invalid input format! Please enter your move as "
@@ -83,60 +83,54 @@ Move *get_move(Game *g) {
     }
 }
 
-bool is_game_won(char *board) {
+GameState evaluate_game_state(Game *g) {
+    char *board = g->board;
+
+    // Check rows
     for (int i = 0; i < 3; i++) {
         if (board[i * 3] != '\0' && board[i * 3] == board[i * 3 + 1] &&
             board[i * 3 + 1] == board[i * 3 + 2]) {
-            return true;
+            return board[i * 3] == 'X' ? GAME_WON_BY_PLAYER1
+                                       : GAME_WON_BY_PLAYER2;
         }
     }
 
+    // Check columns
     for (int i = 0; i < 3; i++) {
         if (board[i] != '\0' && board[i] == board[i + 3] &&
             board[i + 3] == board[i + 6]) {
-            return true;
+            return board[i] == 'X' ? GAME_WON_BY_PLAYER1 : GAME_WON_BY_PLAYER2;
         }
     }
 
+    // Check diagonals
     if (board[0] != '\0' && board[0] == board[4] && board[4] == board[8]) {
-        return true;
+        return board[0] == 'X' ? GAME_WON_BY_PLAYER1 : GAME_WON_BY_PLAYER2;
     }
 
     if (board[2] != '\0' && board[2] == board[4] && board[4] == board[6]) {
-        return true;
+        return board[2] == 'X' ? GAME_WON_BY_PLAYER1 : GAME_WON_BY_PLAYER2;
     }
 
-    return false;
-}
-
-bool is_game_drawn(char *board) {
-    if (is_game_won(board)) {
-        return false;
-    }
-
+    // Check for Draw
     for (int i = 0; i < 9; i++) {
         if (board[i] == '\0') {
-            return false;
+            return GAME_NOT_FINISHED;
         }
     }
 
-    return true;
+    return GAME_DRAWN;
 }
 
-bool is_game_over(Game *g) {
-    return is_game_drawn(g->game_state) || is_game_won(g->game_state);
-}
+GameState is_game_over(Game *g) {
+    GameState result = evaluate_game_state(g);
+    g->result = result;
 
-int get_game_result(Game *g) {
-    if (is_game_drawn(g->game_state)) return GAME_DRAWN;
-
-    if (g->player_turn == PLAYER1) return GAME_WON_BY_PLAYER1;
-
-    return GAME_WON_BY_PLAYER2;
+    return result;
 }
 
 void print_game_state(Game *g) {
-    char *board = (char *)g->game_state;
+    char *board = (char *)g->board;
 
     printf("\n");
     for (int i = 0; i < 3; i++) {
@@ -151,5 +145,5 @@ void print_game_state(Game *g) {
 }
 
 void end_game(Game *g) {
-    free((char *)g->game_state);
+    free((char *)g->board);
 }
