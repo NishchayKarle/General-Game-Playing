@@ -3,42 +3,115 @@
 #ifndef _GAME_
 #define _GAME_
 
-#define PLAYER1 0
-#define PLAYER2 1
+typedef enum {
+    PLAYER1, /** Represents Player 1. */
+    PLAYER2, /** Represents Player 2. */
+} Player;
 
 typedef enum {
-    GAME_NOT_FINISHED,
-    GAME_DRAWN,
-    GAME_WON_BY_PLAYER1,
-    GAME_WON_BY_PLAYER2
+    GAME_NOT_FINISHED,   /** The game is still ongoing. */
+    GAME_DRAWN,          /** The game ended in a draw. */
+    GAME_WON_BY_PLAYER1, /** Player 1 has won the game. */
+    GAME_WON_BY_PLAYER2  /** Player 2 has won the game. */
 } GameState;
 
+/**
+ * Structure representing a move in the game.
+ * This structure is intended to be defined by each specific game.
+ * The fields of the Move structure will vary depending on the game's
+ * requirements.
+ */
 typedef struct Move Move;
 
+/**
+ * Structure representing the state of a game.
+ */
 typedef struct Game {
-    char player1[11];
-    char player2[11];
-    bool player_turn;
-    void *board;
-    GameState result;
-    void *extra1;
-    void *extra2;
+    char player1[11];   /**< The name of Player 1. */
+    char player2[11];   /**< The name of Player 2. */
+    Player player_turn; /**< Enum indicating the current player's turn. */
+    void *board; /**< Pointer to the game board (type depends on the game). */
+    GameState result; /**< The current result/state of the game. */
+    void *extra1;     /**< Extra field for any additional data (implementation
+                         specific). */
+    void *extra2;     /**< Another extra field for any additional data
+                         (implementation specific). */
 } Game;
 
-void setup_players(Game *);
+/**
+ * Initializes the players in the game by setting their names.
+ * This function prompts the users to enter the names of Player 1 and Player 2.
+ *
+ * @param g Pointer to the game structure to be initialized.
+ */
+void setup_players(Game *g);
 
-void create_and_set_game_state(Game *);
+/**
+ * Allocates and initializes the game state.
+ * This function sets up the game board and any other necessary state for the
+ * game.
+ *
+ * @param g Pointer to the game structure.
+ */
+void create_and_set_game_state(Game *g);
 
-bool is_valid_move(Game *, Move *);
+/**
+ * Validates whether a given move is valid.
+ * This function checks the validity of the move according to the game rules.
+ * If the move is not valid, an appropriate error message is printed.
+ *
+ * @param g Pointer to the game structure.
+ * @param m Pointer to the move structure to be validated.
+ * @return true if the move is valid, false otherwise.
+ */
+bool is_valid_move(Game *g, Move *m);
 
-void make_move(Game *, Move *);
+/**
+ * Executes a move in the game.
+ * This function updates the game state based on the provided move.
+ * If the move structure was dynamically allocated, this function is responsible
+ * for freeing it.
+ *
+ * @param g Pointer to the game structure.
+ * @param m Pointer to the move structure containing the move to be made.
+ */
+void make_move(Game *g, Move *m);
 
-Move *get_move(Game *);
+/**
+ * Retrieves a move from the current player.
+ * This function prompts the current player to enter their move.
+ *
+ * @param g Pointer to the game structure.
+ * @return Pointer to the move structure containing the player's move.
+ */
+Move *get_move(Game *g);
 
-GameState is_game_over(Game *);
+/**
+ * Evaluates the current state of the game to determine if it is over.
+ * This function checks if the game has been won, drawn, or is still ongoing.
+ * Update the result in the game structure to indicate current game state.
+ *
+ * @param g Pointer to the game structure.
+ * @return The current state of the game.
+ */
+GameState is_game_over(Game *g);
 
-void print_game_state(Game *);
+/**
+ * Prints the current state of the game.
+ * This function outputs the game board and any relevant information to the
+ * console.
+ *
+ * @param g Pointer to the game structure.
+ */
+void print_game_state(Game *g);
 
-void end_game(Game *);
+/**
+ * Cleans up and frees any resources allocated for the game.
+ * This function should be called at the end of the game to release memory and
+ * other resources.
+ *
+ * @param g Pointer to the game structure.
+ */
+void end_game(Game *g);
 
 #endif

@@ -8,26 +8,34 @@ int main() {
     srand(time(NULL));
 
     Game *game = (Game *)malloc(sizeof(Game));
+    if (game == NULL) {
+        perror("Failed to allocate memory for the game");
+        return EXIT_FAILURE;
+    }
 
     setup_players(game);
 
     create_and_set_game_state(game);
 
-    bool player_turn = rand() % 2;
+    // Randomly select the first player
+    game->player_turn = (rand() % 2 == 0) ? PLAYER1 : PLAYER2;
+
     printf("INITIAL GAME STATE: \n");
     print_game_state(game);
 
+    // Main game loop
     while (is_game_over(game) == GAME_NOT_FINISHED) {
-        game->player_turn = player_turn;
         Move *move = get_move(game);
 
         if (is_valid_move(game, move)) {
             make_move(game, move);
             print_game_state(game);
-            player_turn = !player_turn;
+            game->player_turn =
+                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
         }
     }
 
+    // Display the result of the game
     switch (game->result) {
         case GAME_DRAWN:
             printf("GAME DRAWN\n");
@@ -42,10 +50,12 @@ int main() {
             break;
 
         default:
-            printf("ERROR: Game Result not set after the game is finished\n");
+            printf("ERROR: Game result not set after the game is finished\n");
             break;
     }
 
     end_game(game);
     free(game);
+
+    return 0;
 }
