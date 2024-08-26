@@ -5,7 +5,7 @@
 #include "game.h"
 
 typedef struct Move {
-    int i, j;
+    int r, c;
 } Move;
 
 void setup_players(Game *g) {
@@ -26,7 +26,7 @@ void create_and_set_game_state(Game *g) {
 }
 
 bool is_valid_move(Game *g, Move *m) {
-    if (m->i < 0 || m->i >= 3 || m->j < 0 || m->j >= 3) {
+    if (m->r <= 0 || m->r > 3 || m->c <= 0 || m->c > 3) {
         printf(
             "Invalid move! The move is out of bounds. Please enter row and "
             "column values between 1 and 3.\n");
@@ -35,11 +35,12 @@ bool is_valid_move(Game *g, Move *m) {
 
     char *board = (char *)g->board;
 
-    if (board[m->i * 3 + m->j] != '\0') {
+    int index = (m->r - 1) * 3 + (m->c - 1);
+    if (board[index] != '\0') {
         printf(
             "Invalid move! The cell at row %d, column %d is already occupied. "
             "Please choose an empty cell.\n",
-            m->i + 1, m->j + 1);
+            m->r, m->c);
         return false;
     }
 
@@ -48,7 +49,7 @@ bool is_valid_move(Game *g, Move *m) {
 
 void make_move(Game *g, Move *m) {
     char *board = (char *)g->board;
-    int index = m->i * 3 + m->j;
+    int index = (m->r - 1) * 3 + (m->c - 1);
 
     char symbol = g->player_turn == PLAYER1 ? 'X' : 'O';
     board[index] = symbol;
@@ -68,9 +69,7 @@ Move *get_move(Game *g) {
         if (fgets(input, sizeof(input), stdin) != NULL) {
             input[strcspn(input, "\n")] = '\0';
 
-            if (sscanf(input, "%d,%d", &m->i, &m->j) == 2) {
-                m->i -= 1;
-                m->j -= 1;
+            if (sscanf(input, "%d,%d", &m->r, &m->c) == 2) {
                 return m;
             } else {
                 printf(
