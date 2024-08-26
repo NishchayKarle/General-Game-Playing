@@ -21,7 +21,7 @@ int main() {
     game->player_turn = (rand() % 2 == 0) ? PLAYER1 : PLAYER2;
 
     printf("INITIAL GAME STATE: \n");
-    print_game_state(game);
+    print_game_board(game);
 
     // Main game loop
     while (is_game_over(game) == GAME_NOT_FINISHED) {
@@ -29,7 +29,7 @@ int main() {
 
         if (is_valid_move(game, move)) {
             make_move(game, move);
-            print_game_state(game);
+            print_game_board(game);
             game->player_turn =
                 (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
         }

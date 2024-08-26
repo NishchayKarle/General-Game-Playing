@@ -103,7 +103,7 @@ GameState is_game_over(Game *g);
  *
  * @param g Pointer to the game structure.
  */
-void print_game_state(Game *g);
+void print_game_board(Game *g);
 
 /**
  * Cleans up and frees any resources allocated for the game.

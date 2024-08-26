@@ -149,7 +149,7 @@ GameState is_game_over(Game *g) {
     return result;
 }
 
-void print_game_state(Game *g) {
+void print_game_board(Game *g) {
     char *board = (char *)g->board;
 
     // Print column headers
