@@ -28,6 +28,7 @@ int main() {
         Move *move = get_move(game);
 
         if (is_valid_move(game, move)) {
+            printf("\n");
             make_move(game, move);
             print_game_board(game);
             game->player_turn =
