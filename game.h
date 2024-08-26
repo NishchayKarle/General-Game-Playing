@@ -27,14 +27,14 @@ typedef struct Move Move;
  * Structure representing the state of a game.
  */
 typedef struct Game {
-    char player1[11];   /**< The name of Player 1. */
-    char player2[11];   /**< The name of Player 2. */
-    Player player_turn; /**< Enum indicating the current player's turn. */
-    void *board; /**< Pointer to the game board (type depends on the game). */
-    GameState result; /**< The current result/state of the game. */
-    void *extra1;     /**< Extra field for any additional data (implementation
+    char player1[11];   /** The name of Player 1. */
+    char player2[11];   /** The name of Player 2. */
+    Player player_turn; /** Enum indicating the current player's turn. */
+    void *board; /** Pointer to the game board (type depends on the game). */
+    GameState result; /** The current result/state of the game. */
+    void *extra1;     /** Extra field for any additional data (implementation
                          specific). */
-    void *extra2;     /**< Another extra field for any additional data
+    void *extra2;     /** Another extra field for any additional data
                          (implementation specific). */
 } Game;
 
