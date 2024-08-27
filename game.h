@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#ifndef _GAME_
-#define _GAME_
+#ifndef _GAME_H
+#define _GAME_H
 
 typedef enum {
     PLAYER1, /** Represents Player 1. */
@@ -43,8 +43,9 @@ typedef struct Game {
  * This function prompts the users to enter the names of Player 1 and Player 2.
  *
  * @param g Pointer to the game structure to be initialized.
+ * @param single_player AI mode if true, two-player mode if false.
  */
-void setup_players(Game *g);
+void setup_players(Game *g, bool single_player);
 
 /**
  * Allocates and initializes the game state.
@@ -54,6 +55,22 @@ void setup_players(Game *g);
  * @param g Pointer to the game structure.
  */
 void create_and_set_game_state(Game *g);
+
+/**
+ * Makes a deep copy of the game state.
+ *
+ * @param g Pointer to the game structure.
+ * @return Game* Copy of the game state.
+ */
+Game *copy_game_state(Game *g);
+
+/**
+ * Makes a deep copy of the move.
+ *
+ * @param m Pointer to the move structure.
+ * @return Move* Copy of the move.
+ */
+Move *copy_move(Move *m);
 
 /**
  * Validates whether a given move is valid.
@@ -69,8 +86,6 @@ bool is_valid_move(Game *g, Move *m);
 /**
  * Executes a move in the game.
  * This function updates the game state based on the provided move.
- * If the move structure was dynamically allocated, this function is responsible
- * for freeing it.
  *
  * @param g Pointer to the game structure.
  * @param m Pointer to the move structure containing the move to be made.
@@ -85,6 +100,22 @@ void make_move(Game *g, Move *m);
  * @return Pointer to the move structure containing the player's move.
  */
 Move *get_move(Game *g);
+
+/**
+ * Frees the memory allocated for a move.
+ *
+ * @param m Pointer to the move structure to be freed.
+ */
+void free_move(Move *m);
+
+/**
+ * Generates a list of possible moves for the current game state.
+ *
+ * @param g Pointer to the game structure.
+ * @param num_moves Pointer to an integer to store the number of possible moves.
+ * @return Move** Array of possible moves.
+ */
+Move **get_possible_moves(Game *g, int *num_moves);
 
 /**
  * Evaluates the current state of the game to determine if it is over.
@@ -104,6 +135,13 @@ GameState is_game_over(Game *g);
  * @param g Pointer to the game structure.
  */
 void print_game_board(Game *g);
+
+/**
+ * Prints the details of a move.
+ *
+ * @param m Pointer to the move structure to be printed.
+ */
+void print_move(Move *m);
 
 /**
  * Cleans up and frees any resources allocated for the game.

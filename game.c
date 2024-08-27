@@ -1,11 +1,56 @@
 #include "game.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include "mcts.h"
+
+void single_player_gameplay(Game *game) {
+    while (is_game_over(game) == GAME_NOT_FINISHED) {
+        Move *move = NULL;
+
+        if (game->player_turn == PLAYER1) {
+            // Player 1 is a human player
+            move = get_move(game);
+
+            if (!is_valid_move(game, move)) continue;
+        } else {
+            // Player 2 is the AI using MCTS
+            printf("AI is thinking...\n");
+            move = monte_carlo_tree_search(game);
+            printf("AI made the move: ");
+            print_move(move);
+        }
+
+        make_move(game, move);
+        print_game_board(game);
+        game->player_turn = (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
+
+        free_move(move);
+    }
+}
+
+void two_player_gameplay(Game *game) {
+    while (is_game_over(game) == GAME_NOT_FINISHED) {
+        Move *move = get_move(game);
+
+        if (is_valid_move(game, move)) {
+            make_move(game, move);
+            print_game_board(game);
+            game->player_turn =
+                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
+        }
+
+        free_move(move);
+    }
+}
+
 int main() {
     srand(time(NULL));
+
+    bool single_player = true;
 
     Game *game = (Game *)malloc(sizeof(Game));
     if (game == NULL) {
@@ -13,7 +58,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    setup_players(game);
+    setup_players(game, single_player);
 
     create_and_set_game_state(game);
 
@@ -23,18 +68,8 @@ int main() {
     printf("INITIAL GAME STATE: \n");
     print_game_board(game);
 
-    // Main game loop
-    while (is_game_over(game) == GAME_NOT_FINISHED) {
-        Move *move = get_move(game);
-
-        if (is_valid_move(game, move)) {
-            printf("\n");
-            make_move(game, move);
-            print_game_board(game);
-            game->player_turn =
-                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
-        }
-    }
+    // Start the game
+    single_player ? single_player_gameplay(game) : two_player_gameplay(game);
 
     // Display the result of the game
     switch (game->result) {
