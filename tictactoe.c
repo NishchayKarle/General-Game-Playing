@@ -169,6 +169,13 @@ Move **get_possible_moves(Game *g, int *num_moves) {
     return moves;
 }
 
+void destroy_list_of_moves(Move **moves, int num_moves) {
+    for (int i = 0; i < num_moves; i++) {
+        free_move(moves[i]);
+    }
+    free(moves);
+}
+
 GameState evaluate_game_state(Game *g) {
     char *board = g->board;
 
@@ -234,6 +241,6 @@ void print_move(Move *m) {
     printf("(%d, %d)\n", m->r, m->c);
 }
 
-void end_game(Game *g) {
+void destroy_game(Game *g) {
     free((char *)g->board);
 }

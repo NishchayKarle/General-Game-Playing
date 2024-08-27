@@ -118,6 +118,14 @@ void free_move(Move *m);
 Move **get_possible_moves(Game *g, int *num_moves);
 
 /**
+ * This function is called to free the memory(if) allocated for an array of moves.
+ * 
+ * @param moves Array of moves to be freed.
+ * @param num_moves Number of moves in the array.
+ */
+void destroy_list_of_moves(Move **moves, int num_moves);
+
+/**
  * Evaluates the current state of the game to determine if it is over.
  * This function checks if the game has been won, drawn, or is still ongoing.
  * Update the result in the game structure to indicate current game state.
@@ -150,6 +158,6 @@ void print_move(Move *m);
  *
  * @param g Pointer to the game structure.
  */
-void end_game(Game *g);
+void destroy_game(Game *g);
 
 #endif

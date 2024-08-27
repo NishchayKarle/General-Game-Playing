@@ -90,7 +90,7 @@ int main() {
             break;
     }
 
-    end_game(game);
+    destroy_game(game);
     free(game);
 
     return 0;
