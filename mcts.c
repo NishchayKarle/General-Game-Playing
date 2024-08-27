@@ -91,6 +91,7 @@ Node *expand(Node *n) {
             game->player_turn =
                 (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
             n->children[i] = create_node(game, moves[i], n);
+            destroy_game(game);
         }
 
         destroy_list_of_moves(moves, num_moves);
