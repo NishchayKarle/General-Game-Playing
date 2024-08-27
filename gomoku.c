@@ -4,20 +4,24 @@
 
 #include "game.h"
 
-#define BOARD_SIZE 15
+#define BOARD_SIZE 12
 
 typedef struct Move {
     int r, c;
 } Move;
 
-void setup_players(Game *g) {
+void setup_players(Game *g, bool single_player) {
     printf("Player1 - 'X': Enter your name (up to 10 characters): ");
     scanf("%10s", g->player1);
     getchar();
 
-    printf("Player2 - 'O': Enter your name (up to 10 characters): ");
-    scanf("%10s", g->player2);
-    getchar();
+    if (single_player) {
+        strcpy(g->player2, "AI");
+    } else {
+        printf("Player2 - 'O': Enter your name (up to 10 characters): ");
+        scanf("%10s", g->player2);
+        getchar();
+    }
 }
 
 void create_and_set_game_state(Game *g) {
@@ -25,6 +29,41 @@ void create_and_set_game_state(Game *g) {
     memset(board, '.', BOARD_SIZE * BOARD_SIZE);
 
     g->board = (void *)board;
+    g->result = GAME_NOT_FINISHED;
+}
+
+Game *copy_game_state(Game *g) {
+    Game *copy = (Game *)malloc(sizeof(Game));
+    if (copy == NULL) {
+        perror("Failed to allocate memory for the game copy");
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(copy->player1, g->player1);
+    strcpy(copy->player2, g->player2);
+    copy->player_turn = g->player_turn;
+    copy->result = g->result;
+
+    char *board = (char *)malloc(sizeof(char) * BOARD_SIZE * BOARD_SIZE);
+    memcpy(board, g->board, BOARD_SIZE * BOARD_SIZE);
+    copy->board = (void *)board;
+
+    return copy;
+}
+
+Move *copy_move(Move *m) {
+    if (!m) return NULL;
+
+    Move *copy = (Move *)malloc(sizeof(Move));
+    if (copy == NULL) {
+        perror("Failed to allocate memory for the move copy");
+        exit(EXIT_FAILURE);
+    }
+
+    copy->r = m->r;
+    copy->c = m->c;
+
+    return copy;
 }
 
 bool is_valid_move(Game *g, Move *m) {
@@ -56,8 +95,6 @@ void make_move(Game *g, Move *m) {
 
     char symbol = g->player_turn == PLAYER1 ? 'X' : 'O';
     board[index] = symbol;
-
-    free(m);
 }
 
 Move *get_move(Game *g) {
@@ -83,6 +120,29 @@ Move *get_move(Game *g) {
             printf("Error reading input. Please try again.\n");
         }
     }
+}
+
+void free_move(Move *m) {
+    free(m);
+}
+
+Move **get_possible_moves(Game *g, int *num_moves) {
+    char *board = (char *)g->board;
+    Move **moves = (Move **)malloc(sizeof(Move *) * BOARD_SIZE * BOARD_SIZE);
+    *num_moves = 0;
+
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i * BOARD_SIZE + j] == '.') {
+                Move *m = (Move *)malloc(sizeof(Move));
+                m->r = i + 1;
+                m->c = j + 1;
+                moves[(*num_moves)++] = m;
+            }
+        }
+    }
+
+    return moves;
 }
 
 GameState evaluate_game_state(Game *g) {
@@ -196,6 +256,10 @@ void print_game_board(Game *g) {
             printf("\n");
         }
     }
+}
+
+void print_move(Move *m) {
+    printf("(%d, %d)\n", m->r, m->c);
 }
 
 void end_game(Game *g) {

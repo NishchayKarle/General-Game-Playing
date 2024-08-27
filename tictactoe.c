@@ -8,14 +8,18 @@ typedef struct Move {
     int r, c;
 } Move;
 
-void setup_players(Game *g) {
+void setup_players(Game *g, bool single_player) {
     printf("Player1 - 'X': Enter your name (up to 10 characters): ");
     scanf("%10s", g->player1);
     getchar();
 
-    printf("Player2 - 'O': Enter your name (up to 10 characters): ");
-    scanf("%10s", g->player2);
-    getchar();
+    if (single_player) {
+        strcpy(g->player2, "AI");
+    } else {
+        printf("Player2 - 'O': Enter your name (up to 10 characters): ");
+        scanf("%10s", g->player2);
+        getchar();
+    }
 }
 
 void create_and_set_game_state(Game *g) {
@@ -23,6 +27,41 @@ void create_and_set_game_state(Game *g) {
     memset(board, '\0', 10);
 
     g->board = (void *)board;
+    g->result = GAME_NOT_FINISHED;
+}
+
+Game *copy_game_state(Game *g) {
+    Game *copy = (Game *)malloc(sizeof(Game));
+    if (copy == NULL) {
+        perror("Failed to allocate memory for the game copy");
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(copy->player1, g->player1);
+    strcpy(copy->player2, g->player2);
+    copy->player_turn = g->player_turn;
+    copy->result = g->result;
+
+    char *board = (char *)malloc(sizeof(char) * 10);
+    memcpy(board, g->board, 10);
+    copy->board = (void *)board;
+
+    return copy;
+}
+
+Move *copy_move(Move *m) {
+    if (!m) return NULL;
+
+    Move *copy = (Move *)malloc(sizeof(Move));
+    if (copy == NULL) {
+        perror("Failed to allocate memory for the move copy");
+        exit(EXIT_FAILURE);
+    }
+
+    copy->r = m->r;
+    copy->c = m->c;
+
+    return copy;
 }
 
 bool is_valid_move(Game *g, Move *m) {
@@ -53,8 +92,6 @@ void make_move(Game *g, Move *m) {
 
     char symbol = g->player_turn == PLAYER1 ? 'X' : 'O';
     board[index] = symbol;
-
-    free(m);
 }
 
 Move *get_move(Game *g) {
@@ -80,6 +117,56 @@ Move *get_move(Game *g) {
             printf("Error reading input. Please try again.\n");
         }
     }
+}
+
+void free_move(Move *m) {
+    free(m);
+}
+
+Move **get_possible_moves(Game *g, int *num_moves) {
+    char *board = (char *)g->board;
+    *num_moves = 0;
+
+    // First pass: count the number of empty cells
+    for (int i = 0; i < 9; i++) {
+        if (board[i] == '\0') {
+            (*num_moves)++;
+        }
+    }
+
+    // If no moves are possible, return NULL
+    if (*num_moves == 0) {
+        return NULL;
+    }
+
+    // Allocate memory for the array of moves
+    Move **moves = (Move **)malloc(sizeof(Move *) * (*num_moves));
+    if (moves == NULL) {
+        perror("Failed to allocate memory for possible moves");
+        exit(EXIT_FAILURE);
+    }
+
+    // Second pass: populate the array with possible moves
+    int index = 0;
+    for (int i = 0; i < 9; i++) {
+        if (board[i] == '\0') {
+            Move *m = (Move *)malloc(sizeof(Move));
+            if (m == NULL) {
+                perror("Failed to allocate memory for a move");
+                // Free any previously allocated moves before exiting
+                for (int j = 0; j < index; j++) {
+                    free(moves[j]);
+                }
+                free(moves);
+                exit(EXIT_FAILURE);
+            }
+            m->r = i / 3 + 1;  // Convert index to row
+            m->c = i % 3 + 1;  // Convert index to column
+            moves[index++] = m;
+        }
+    }
+
+    return moves;
 }
 
 GameState evaluate_game_state(Game *g) {
@@ -141,6 +228,10 @@ void print_game_board(Game *g) {
         if (i < 2) printf("---|---|---\n");
     }
     printf("\n");
+}
+
+void print_move(Move *m) {
+    printf("(%d, %d)\n", m->r, m->c);
 }
 
 void end_game(Game *g) {

@@ -4,21 +4,25 @@
 
 #include "game.h"
 
-#define ROWS 10
-#define COLUMNS 12
+#define ROWS 5
+#define COLUMNS 8
 
 typedef struct Move {
     int c;
 } Move;
 
-void setup_players(Game *g) {
+void setup_players(Game *g, bool single_player) {
     printf("Player1 - 'X': Enter your name (up to 10 characters): ");
     scanf("%10s", g->player1);
     getchar();
 
-    printf("Player2 - 'O': Enter your name (up to 10 characters): ");
-    scanf("%10s", g->player2);
-    getchar();
+    if (single_player) {
+        strcpy(g->player2, "AI");
+    } else {
+        printf("Player2 - 'O': Enter your name (up to 10 characters): ");
+        scanf("%10s", g->player2);
+        getchar();
+    }
 }
 
 void create_and_set_game_state(Game *g) {
@@ -26,6 +30,40 @@ void create_and_set_game_state(Game *g) {
     memset(board, '.', ROWS * COLUMNS);
 
     g->board = (void *)board;
+    g->result = GAME_NOT_FINISHED;
+}
+
+Game *copy_game_state(Game *g) {
+    Game *copy = (Game *)malloc(sizeof(Game));
+    if (copy == NULL) {
+        perror("Failed to allocate memory for the game copy");
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(copy->player1, g->player1);
+    strcpy(copy->player2, g->player2);
+    copy->player_turn = g->player_turn;
+    copy->result = g->result;
+
+    char *board = (char *)malloc(sizeof(char) * ROWS * COLUMNS);
+    memcpy(board, g->board, ROWS * COLUMNS);
+    copy->board = (void *)board;
+
+    return copy;
+}
+
+Move *copy_move(Move *m) {
+    if (!m) return NULL;
+
+    Move *copy = (Move *)malloc(sizeof(Move));
+    if (copy == NULL) {
+        perror("Failed to allocate memory for the move copy");
+        exit(EXIT_FAILURE);
+    }
+
+    copy->c = m->c;
+
+    return copy;
 }
 
 bool is_valid_move(Game *g, Move *m) {
@@ -46,8 +84,6 @@ void make_move(Game *g, Move *m) {
             break;
         }
     }
-
-    free(m);
 }
 
 Move *get_move(Game *g) {
@@ -59,8 +95,10 @@ Move *get_move(Game *g) {
                g->player_turn == PLAYER1 ? g->player1 : g->player2,
                g->player_turn == PLAYER1 ? 'X' : 'O');
 
-        printf("%s, enter the column (1-%d) where you want to drop your disc: ",
-               g->player_turn == PLAYER1 ? g->player1 : g->player2, COLUMNS);
+        printf(
+            "%s, enter the column (1-%d) where you want to drop your "
+            "disc: ",
+            g->player_turn == PLAYER1 ? g->player1 : g->player2, COLUMNS);
         scanf("%d", &column);
 
         // Check if the input column is within the valid range
@@ -75,6 +113,26 @@ Move *get_move(Game *g) {
     }
 
     return m;
+}
+
+void free_move(Move *m) {
+    free(m);
+}
+
+Move **get_possible_moves(Game *g, int *num_moves) {
+    char *board = (char *)g->board;
+    Move **moves = (Move **)malloc(sizeof(Move *) * COLUMNS);
+    *num_moves = 0;
+
+    for (int i = 0; i < COLUMNS; i++) {
+        if (board[i] == '.') {
+            Move *m = (Move *)malloc(sizeof(Move));
+            m->c = i + 1;
+            moves[(*num_moves)++] = m;
+        }
+    }
+
+    return moves;
 }
 
 GameState evaluate_game_state(Game *g) {
@@ -133,12 +191,11 @@ GameState evaluate_game_state(Game *g) {
     }
 
     // Check for Draw
-    for (int i = 0; i < ROWS * COLUMNS; i++) {
-        if (board[i] == '.') {
+    for (int j = 0; j < COLUMNS; j++) {
+        if (board[j] == '.') {
             return GAME_NOT_FINISHED;
         }
     }
-
     return GAME_DRAWN;
 }
 
@@ -177,6 +234,10 @@ void print_game_board(Game *g) {
         printf("----");
     }
     printf("\n");
+}
+
+void print_move(Move *m) {
+    printf("Col: %d\n", m->c);
 }
 
 void end_game(Game *g) {
