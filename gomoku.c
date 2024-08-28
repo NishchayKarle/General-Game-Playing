@@ -4,7 +4,7 @@
 
 #include "game.h"
 
-#define BOARD_SIZE 12
+#define BOARD_SIZE 7
 
 typedef struct Move {
     int r, c;
@@ -167,44 +167,40 @@ GameState evaluate_game_state(Game *g) {
             char current = board[i * BOARD_SIZE + j];
             if (current == 'X' || current == 'O') {
                 // Check horizontal
-                if (j <= BOARD_SIZE - 5) {
+                if (j <= BOARD_SIZE - 4) {
                     if (current == board[i * BOARD_SIZE + (j + 1)] &&
                         current == board[i * BOARD_SIZE + (j + 2)] &&
-                        current == board[i * BOARD_SIZE + (j + 3)] &&
-                        current == board[i * BOARD_SIZE + (j + 4)]) {
+                        current == board[i * BOARD_SIZE + (j + 3)]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
                 }
 
                 // Check vertical
-                if (i <= BOARD_SIZE - 5) {
+                if (i <= BOARD_SIZE - 4) {
                     if (current == board[(i + 1) * BOARD_SIZE + j] &&
                         current == board[(i + 2) * BOARD_SIZE + j] &&
-                        current == board[(i + 3) * BOARD_SIZE + j] &&
-                        current == board[(i + 4) * BOARD_SIZE + j]) {
+                        current == board[(i + 3) * BOARD_SIZE + j]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
                 }
 
                 // Check diagonal (top-left to bottom-right)
-                if (i <= BOARD_SIZE - 5 && j <= BOARD_SIZE - 5) {
+                if (i <= BOARD_SIZE - 4 && j <= BOARD_SIZE - 4) {
                     if (current == board[(i + 1) * BOARD_SIZE + (j + 1)] &&
                         current == board[(i + 2) * BOARD_SIZE + (j + 2)] &&
-                        current == board[(i + 3) * BOARD_SIZE + (j + 3)] &&
-                        current == board[(i + 4) * BOARD_SIZE + (j + 4)]) {
+                        current == board[(i + 3) * BOARD_SIZE + (j + 3)]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
                 }
 
                 // Check diagonal (bottom-left to top-right)
-                if (i >= 4 && j <= BOARD_SIZE - 5) {
+                if (i >= 3 && j <= BOARD_SIZE - 4) {
                     if (current == board[(i - 1) * BOARD_SIZE + (j + 1)] &&
                         current == board[(i - 2) * BOARD_SIZE + (j + 2)] &&
-                        current == board[(i - 3) * BOARD_SIZE + (j + 3)] &&
-                        current == board[(i - 4) * BOARD_SIZE + (j + 4)]) {
+                        current == board[(i - 3) * BOARD_SIZE + (j + 3)]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }

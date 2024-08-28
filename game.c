@@ -5,9 +5,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "mcts.h"
+// define _AI_PLAYER_H to play against the AI
+// Ex: gcc -D_AI_PLAYER_H <your_game.c> <your_ai.c> game.c -o game
+#ifdef _AI_PLAYER_H
+#include "ai.h"
+#define SINGLE_PLAYER true
 
-void single_player_gameplay(Game *game) {
+void begin_game(Game *game) {
     while (is_game_over(game) == GAME_NOT_FINISHED) {
         Move *move = NULL;
 
@@ -20,7 +24,7 @@ void single_player_gameplay(Game *game) {
             // Player 2 is the AI using MCTS
             printf("AI is thinking...(Move time limit: %ds)\n",
                    MOVE_TIME_LIMIT);
-            move = monte_carlo_tree_search(game);
+            move = ai_make_move(game);
             printf("AI made the move: ");
             print_move(move);
         }
@@ -32,8 +36,12 @@ void single_player_gameplay(Game *game) {
         destroy_move(move);
     }
 }
+#endif
 
-void two_player_gameplay(Game *game) {
+#ifndef _AI_PLAYER_H
+#define SINGLE_PLAYER false
+
+void begin_game(Game *game) {
     while (is_game_over(game) == GAME_NOT_FINISHED) {
         Move *move = get_move(game);
 
@@ -47,11 +55,10 @@ void two_player_gameplay(Game *game) {
         destroy_move(move);
     }
 }
+#endif
 
 int main() {
     srand(time(NULL));
-
-    bool single_player = true;
 
     Game *game = (Game *)malloc(sizeof(Game));
     if (game == NULL) {
@@ -59,7 +66,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    setup_players(game, single_player);
+    setup_players(game, SINGLE_PLAYER);
 
     create_and_set_game_state(game);
 
@@ -70,7 +77,7 @@ int main() {
     print_game_board(game);
 
     // Start the game
-    single_player ? single_player_gameplay(game) : two_player_gameplay(game);
+    begin_game(game);
 
     // Display the result of the game
     switch (game->result) {

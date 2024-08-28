@@ -1,10 +1,15 @@
-#include "mcts.h"
-
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include "ai.h"
+#include "game.h"
+
+#define MAX_ITERATIONS 1000000
+#define UCB1_CONSTANT 1.414
+#define REWARD_DRAW 0.5
 
 typedef struct Node {
     Game *game_state;
@@ -151,4 +156,8 @@ Move *monte_carlo_tree_search(Game *g) {
     free_node(root);
 
     return best_move;
+}
+
+Move *ai_make_move(Game *g) {
+    return monte_carlo_tree_search(g);
 }

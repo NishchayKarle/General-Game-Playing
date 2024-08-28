@@ -1,7 +1,7 @@
-#include <stdbool.h>
-
 #ifndef _GAME_H
 #define _GAME_H
+
+#include <stdbool.h>
 
 typedef enum {
     PLAYER1, /** Represents Player 1. */
@@ -57,22 +57,6 @@ void setup_players(Game *g, bool single_player);
 void create_and_set_game_state(Game *g);
 
 /**
- * Makes a deep copy of the game state.
- *
- * @param g Pointer to the game structure.
- * @return Game* Copy of the game state.
- */
-Game *copy_game_state(Game *g);
-
-/**
- * Makes a deep copy of the move.
- *
- * @param m Pointer to the move structure.
- * @return Move* Copy of the move.
- */
-Move *copy_move(Move *m);
-
-/**
  * Validates whether a given move is valid.
  * This function checks the validity of the move according to the game rules.
  * If the move is not valid, an appropriate error message is printed.
@@ -107,23 +91,6 @@ Move *get_move(Game *g);
  * @param m Pointer to the move structure to be freed.
  */
 void destroy_move(Move *m);
-
-/**
- * Generates a list of possible moves for the current game state.
- *
- * @param g Pointer to the game structure.
- * @param num_moves Pointer to an integer to store the number of possible moves.
- * @return Move** Array of possible moves.
- */
-Move **get_possible_moves(Game *g, int *num_moves);
-
-/**
- * This function is called to free the memory(if) allocated for an array of moves.
- * 
- * @param moves Array of moves to be freed.
- * @param num_moves Number of moves in the array.
- */
-void destroy_list_of_moves(Move **moves, int num_moves);
 
 /**
  * Evaluates the current state of the game to determine if it is over.
