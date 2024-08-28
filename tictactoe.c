@@ -225,15 +225,21 @@ GameState is_game_over(Game *g) {
 void print_game_board(Game *g) {
     char *board = (char *)g->board;
 
-    printf("\n");
+    // Print column numbers
+    printf("   1   2   3\n");
     for (int i = 0; i < 3; i++) {
+        // Print row number
+        printf("%d ", i + 1);
+
         for (int j = 0; j < 3; j++) {
             printf(" %c ", board[i * 3 + j] == '\0' ? ' ' : board[i * 3 + j]);
             if (j < 2) printf("|");
         }
+
         printf("\n");
-        if (i < 2) printf("---|---|---\n");
+        if (i < 2) printf("  ---|---|---\n");
     }
+
     printf("\n");
 }
 
