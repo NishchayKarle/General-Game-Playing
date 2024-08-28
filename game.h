@@ -106,7 +106,7 @@ Move *get_move(Game *g);
  *
  * @param m Pointer to the move structure to be freed.
  */
-void free_move(Move *m);
+void destroy_move(Move *m);
 
 /**
  * Generates a list of possible moves for the current game state.

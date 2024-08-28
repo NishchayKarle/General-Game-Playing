@@ -125,7 +125,7 @@ Move *get_move(Game *g) {
     }
 }
 
-void free_move(Move *m) {
+void destroy_move(Move *m) {
     free(m);
 }
 
@@ -177,7 +177,7 @@ Move **get_possible_moves(Game *g, int *num_moves) {
 
 void destroy_list_of_moves(Move **moves, int num_moves) {
     for (int i = 0; i < num_moves; i++) {
-        free_move(moves[i]);
+        destroy_move(moves[i]);
     }
     free(moves);
 }

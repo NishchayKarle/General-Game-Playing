@@ -6,11 +6,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define NUM_ITERATIONS 100000
-#define NUM_SECONDS 5
-#define UCB1_CONSTANT 1.414
-#define REWARD_DRAW 0.0
-
 typedef struct Node {
     Game *game_state;
     Move *move;
@@ -39,7 +34,7 @@ void free_node(Node *n) {
     if (n == NULL) return;
 
     destroy_game(n->game_state);
-    free_move(n->move);
+    destroy_move(n->move);
 
     if (n->children != NULL) {
         for (int i = 0; i < n->num_children; i++) {
@@ -122,6 +117,9 @@ double simulate(Node *n) {
             return 0.0;
         case GAME_WON_BY_PLAYER2:
             return 1.0;
+        default:
+            perror("Invalid game state");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -138,7 +136,10 @@ void backpropagate(Node *n, double reward) {
 Move *monte_carlo_tree_search(Game *g) {
     Node *root = create_node(g, NULL, NULL);
 
-    for (int i = 0; i < NUM_ITERATIONS; i++) {
+    clock_t start_time = clock();
+    for (int i = 0; i < MAX_ITERATIONS &&
+                    (clock() - start_time) / CLOCKS_PER_SEC < MOVE_TIME_LIMIT;
+         i++) {
         Node *selected_child = expand(root);
         double reward = simulate(selected_child);
         backpropagate(selected_child, reward);

@@ -18,7 +18,8 @@ void single_player_gameplay(Game *game) {
             if (!is_valid_move(game, move)) continue;
         } else {
             // Player 2 is the AI using MCTS
-            printf("AI is thinking...\n");
+            printf("AI is thinking...(Move time limit: %ds)\n",
+                   MOVE_TIME_LIMIT);
             move = monte_carlo_tree_search(game);
             printf("AI made the move: ");
             print_move(move);
@@ -28,7 +29,7 @@ void single_player_gameplay(Game *game) {
         print_game_board(game);
         game->player_turn = (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
 
-        free_move(move);
+        destroy_move(move);
     }
 }
 
@@ -43,7 +44,7 @@ void two_player_gameplay(Game *game) {
                 (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
         }
 
-        free_move(move);
+        destroy_move(move);
     }
 }
 
