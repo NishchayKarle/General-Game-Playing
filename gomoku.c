@@ -272,4 +272,5 @@ void print_move(Move *m) {
 void destroy_game(Game *g) {
     free((char *)g->board);
     g->board = NULL;
+    free(g);
 }
