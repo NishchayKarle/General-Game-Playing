@@ -91,7 +91,6 @@ int main() {
     }
 
     destroy_game(game);
-    free(game);
 
     return 0;
 }
