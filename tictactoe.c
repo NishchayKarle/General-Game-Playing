@@ -10,14 +10,20 @@ typedef struct Move {
 
 void setup_players(Game *g, bool single_player) {
     printf("Player1 - 'X': Enter your name (up to 10 characters): ");
-    scanf("%10s", g->player1);
+    if (!scanf("%10s", g->player1)) {
+        perror("Failed to read player1 name");
+        exit(EXIT_FAILURE);
+    }
     getchar();
 
     if (single_player) {
         strcpy(g->player2, "AI");
     } else {
         printf("Player2 - 'O': Enter your name (up to 10 characters): ");
-        scanf("%10s", g->player2);
+        if (!scanf("%10s", g->player2)) {
+            perror("Failed to read player2 name");
+            exit(EXIT_FAILURE);
+        }
         getchar();
     }
 }
