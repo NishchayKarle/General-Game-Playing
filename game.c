@@ -94,7 +94,7 @@ int main() {
             break;
 
         default:
-            printf("ERROR: Game result not set after the game is finished\n");
+            printf("Error in game result\n");
             break;
     }
 
