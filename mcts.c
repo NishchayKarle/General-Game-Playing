@@ -1,15 +1,12 @@
+#include "mcts.h"
+
 #include <limits.h>
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "ai.h"
 #include "game.h"
-
-#define MAX_ITERATIONS 1000000
-#define UCB1_CONSTANT 1.414
-#define REWARD_DRAW 0.5
 
 typedef struct Node {
     Game *game_state;
@@ -21,7 +18,7 @@ typedef struct Node {
     double win_count;
 } Node;
 
-Node *create_node(Game *g, Move *m, Node *parent) {
+static Node *create_node(Game *g, Move *m, Node *parent) {
     Node *node = (Node *)malloc(sizeof(Node));
 
     node->game_state = copy_game_state(g);
@@ -35,7 +32,7 @@ Node *create_node(Game *g, Move *m, Node *parent) {
     return node;
 }
 
-void free_node(Node *n) {
+static void free_node(Node *n) {
     if (n == NULL) return;
 
     destroy_game(n->game_state);
@@ -51,11 +48,11 @@ void free_node(Node *n) {
     free(n);
 }
 
-double UCB1(double W, int N, int Nj, double C) {
+static double UCB1(double W, int N, int Nj, double C) {
     return (W / N) + C * sqrt(log(N) / Nj);
 }
 
-Node *select_best_child(Node *n) {
+static Node *select_best_child(Node *n) {
     Node *best_child = NULL;
     double best_score = -1.0;
 
@@ -77,7 +74,7 @@ Node *select_best_child(Node *n) {
     return best_child;
 }
 
-Node *expand(Node *n) {
+static Node *expand(Node *n) {
     if (n->children == NULL) {
         int num_moves = 0;
         Move **moves = get_possible_moves(n->game_state, &num_moves);
@@ -100,7 +97,7 @@ Node *expand(Node *n) {
     return select_best_child(n);
 }
 
-double simulate(Node *n) {
+static double simulate(Node *n, Player p) {
     Game *game = copy_game_state(n->game_state);
 
     while (is_game_over(game) == GAME_NOT_FINISHED) {
@@ -119,16 +116,17 @@ double simulate(Node *n) {
         case GAME_DRAWN:
             return REWARD_DRAW;
         case GAME_WON_BY_PLAYER1:
+            if (p == PLAYER1) return 1.0;
             return 0.0;
         case GAME_WON_BY_PLAYER2:
-            return 1.0;
+            if (p == PLAYER2) return 1.0;
+            return 0.0;
         default:
-            perror("Invalid game state");
             exit(EXIT_FAILURE);
     }
 }
 
-void backpropagate(Node *n, double reward) {
+static void backpropagate(Node *n, double reward) {
     Node *current = n;
 
     while (current != NULL) {
@@ -138,7 +136,7 @@ void backpropagate(Node *n, double reward) {
     }
 }
 
-Move *monte_carlo_tree_search(Game *g) {
+Move *monte_carlo_tree_search(Game *g, Player p) {
     Node *root = create_node(g, NULL, NULL);
 
     clock_t start_time = clock();
@@ -146,7 +144,7 @@ Move *monte_carlo_tree_search(Game *g) {
                     (clock() - start_time) / CLOCKS_PER_SEC < MOVE_TIME_LIMIT;
          i++) {
         Node *selected_child = expand(root);
-        double reward = simulate(selected_child);
+        double reward = simulate(selected_child, p);
         backpropagate(selected_child, reward);
     }
 
@@ -159,5 +157,5 @@ Move *monte_carlo_tree_search(Game *g) {
 }
 
 Move *ai_make_move(Game *g) {
-    return monte_carlo_tree_search(g);
+    return monte_carlo_tree_search(g, PLAYER2);
 }
