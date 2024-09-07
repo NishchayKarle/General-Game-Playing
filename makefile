@@ -1,6 +1,6 @@
 # Default target when no specific target is specified
 default:
-	@echo "Please specify a target to build. Available targets: tictactoe tictactoe_ai tictactoe_mcts tictactoe_minimax connect4 connect4_ai connect4_mcts connect4_minimax gomoku gomoku_ai gomoku_mcts gomoku_minimax"
+	@echo "Please specify a target to build. Available targets: tictactoe, connect4, gomoku, checkers, tictactoe_ai, connect4_ai, gomoku_ai, tictactoe_mcts, connect4_mcts, gomoku_mcts, tictactoe_minimax, connect4_minimax, gomoku_minimax"
 
 # Targets for Tic-Tac-Toe
 tictactoe: game.c game.h tictactoe.c 
@@ -40,6 +40,9 @@ gomoku_mcts: game.c game.h gomoku.c mcts.c mcts.h ai.h
 
 gomoku_minimax: game.c game.h gomoku.c minimax.c minimax.h ai.h
 	gcc -o gomoku_minimax -Ofast game.c gomoku.c minimax.c -lm -DAI_VS_P
+
+checkers: game.c game.h checkers.c
+	gcc -o checkers -Ofast game.c checkers.c -lm -lcurses -DP_VS_P
 
 # Clean target to remove all compiled files
 clean:
