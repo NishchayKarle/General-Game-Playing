@@ -65,6 +65,14 @@ void end();
 void setup_players(Game *g, bool single_player);
 
 /**
+ * Randomly selects the starting player and sets the player_turn field in the
+ * game
+ *
+ * @param g Pointer to the game structure.
+ */
+void pick_starting_player(Game *g);
+
+/**
  * Allocates and initializes the game state.
  * This function sets up the game board and any other necessary state for the
  * game.

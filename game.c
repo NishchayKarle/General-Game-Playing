@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #ifdef AI_VS_P
 #include "ai.h"
@@ -60,8 +59,6 @@ void begin_game(Game *game) {
 #endif
 
 int main() {
-    srand(time(NULL));
-
     init();
 
     Game *game = (Game *)malloc(sizeof(Game));
@@ -74,8 +71,7 @@ int main() {
 
     setup_players(game, SINGLE_PLAYER);
 
-    // Randomly select the first player
-    game->player_turn = (rand() % 2 == 0) ? PLAYER1 : PLAYER2;
+    pick_starting_player(game);
 
     print_game_board(game);
 
