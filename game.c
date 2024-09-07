@@ -5,51 +5,53 @@
 #include <stdlib.h>
 #include <time.h>
 
-// define _AI_PLAYER_H to play against the AI
-// Ex: gcc -D_AI_PLAYER_H <your_game.c> <your_ai.c> game.c -o game
-#ifdef _AI_PLAYER_H
+#ifdef AI_VS_P
 #include "ai.h"
 #define SINGLE_PLAYER true
 
 void begin_game(Game *game) {
+    char ai_move_str[100];
+    snprintf(ai_move_str, sizeof(ai_move_str),
+             "AI is thinking...(Move time limit: %ds)\n", MOVE_TIME_LIMIT);
+
     while (is_game_over(game) == GAME_NOT_FINISHED) {
         Move *move = NULL;
 
         if (game->player_turn == PLAYER1) {
-            // Player 1 is a human player
             move = get_move(game);
-
             if (!is_valid_move(game, move)) continue;
         } else {
-            // Player 2 is the AI using MCTS
-            printf("AI is thinking...(Move time limit: %ds)\n",
-                   MOVE_TIME_LIMIT);
+            print(ai_move_str);
             move = ai_make_move(game);
-            printf("AI made the move: ");
-            print_move(move);
+            print_move(game, move);
         }
 
-        make_move(game, move);
+        bool done = make_move(game, move);
         print_game_board(game);
-        game->player_turn = (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
+
+        if (done)
+            game->player_turn =
+                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
 
         destroy_move(move);
     }
 }
 #endif
 
-#ifndef _AI_PLAYER_H
+#ifdef P_VS_P
 #define SINGLE_PLAYER false
 
 void begin_game(Game *game) {
-    while (is_game_over(game) == GAME_NOT_FINISHED) {
+    while ((game->result = is_game_over(game)) == GAME_NOT_FINISHED) {
         Move *move = get_move(game);
 
         if (is_valid_move(game, move)) {
-            make_move(game, move);
+            bool done = make_move(game, move);
             print_game_board(game);
-            game->player_turn =
-                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
+            print_move(game, move);
+            if (done)
+                game->player_turn =
+                    (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
         }
 
         destroy_move(move);
@@ -60,45 +62,31 @@ void begin_game(Game *game) {
 int main() {
     srand(time(NULL));
 
+    init();
+
     Game *game = (Game *)malloc(sizeof(Game));
     if (game == NULL) {
-        perror("Failed to allocate memory for the game");
-        return EXIT_FAILURE;
+        print("Failed to allocate memory for the game");
+        exit(EXIT_FAILURE);
     }
 
-    setup_players(game, SINGLE_PLAYER);
+    init_game_state(game);
 
-    create_and_set_game_state(game);
+    setup_players(game, SINGLE_PLAYER);
 
     // Randomly select the first player
     game->player_turn = (rand() % 2 == 0) ? PLAYER1 : PLAYER2;
 
-    printf("INITIAL GAME STATE: \n");
     print_game_board(game);
 
     // Start the game
     begin_game(game);
 
     // Display the result of the game
-    switch (game->result) {
-        case GAME_DRAWN:
-            printf("GAME DRAWN\n");
-            break;
-
-        case GAME_WON_BY_PLAYER1:
-            printf("PLAYER 1 - %s WON\n", game->player1);
-            break;
-
-        case GAME_WON_BY_PLAYER2:
-            printf("PLAYER 2 - %s WON\n", game->player2);
-            break;
-
-        default:
-            printf("Error in game result\n");
-            break;
-    }
+    display_result(game);
 
     destroy_game(game);
+    end();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
