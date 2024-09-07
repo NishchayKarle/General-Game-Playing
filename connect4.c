@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "game.h"
 
@@ -10,6 +11,13 @@
 typedef struct Move {
     int c;
 } Move;
+
+void init() {
+    srand(time(NULL));
+}
+
+void end() {
+}
 
 void setup_players(Game *g, bool single_player) {
     printf("Player1 - 'X': Enter your name (up to 10 characters): ");
@@ -31,7 +39,11 @@ void setup_players(Game *g, bool single_player) {
     }
 }
 
-void create_and_set_game_state(Game *g) {
+void pick_starting_player(Game *g) {
+    g->player_turn = rand() % 2 == 0 ? PLAYER1 : PLAYER2;
+}
+
+void init_game_state(Game *g) {
     char *board = (char *)malloc(sizeof(char) * ROWS * COLUMNS);
     memset(board, '.', ROWS * COLUMNS);
 
@@ -80,7 +92,7 @@ bool is_valid_move(Game *g, Move *m) {
     return false;
 }
 
-void make_move(Game *g, Move *m) {
+bool make_move(Game *g, Move *m) {
     char *board = (char *)g->board;
     char symbol = g->player_turn == PLAYER1 ? 'X' : 'O';
 
@@ -90,6 +102,8 @@ void make_move(Game *g, Move *m) {
             break;
         }
     }
+
+    return true;
 }
 
 Move *get_move(Game *g) {
@@ -219,8 +233,30 @@ GameState is_game_over(Game *g) {
     return result;
 }
 
+void display_result(Game *g) {
+    switch (g->result) {
+        case GAME_DRAWN:
+            printf("GAME DRAWN\n");
+            break;
+
+        case GAME_WON_BY_PLAYER1:
+            printf("PLAYER 1 - %s WON\n", g->player1);
+            break;
+
+        case GAME_WON_BY_PLAYER2:
+            printf("PLAYER 2 - %s WON\n", g->player2);
+            break;
+
+        default:
+            printf("Error in game result\n");
+            break;
+    }
+}
+
 void print_game_board(Game *g) {
     char *board = (char *)g->board;
+
+    printf("\n");
 
     // Print column headers
     printf(" ");
@@ -249,8 +285,15 @@ void print_game_board(Game *g) {
     printf("\n");
 }
 
-void print_move(Move *m) {
-    printf("Col: %d\n", m->c);
+void print_move(Game *g, Move *m) {
+    printf("%s - '%c' made the move: ",
+           g->player_turn == PLAYER1 ? g->player1 : g->player2,
+           g->player_turn == PLAYER1 ? 'X' : 'O');
+    printf("Col: %d\n\n", m->c);
+}
+
+void print(char *str) {
+    printf("%s\n", str);
 }
 
 void destroy_game(Game *g) {

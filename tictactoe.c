@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "game.h"
 
@@ -9,6 +10,7 @@ typedef struct Move {
 } Move;
 
 void init() {
+    srand(time(NULL));
 }
 
 void end() {
@@ -32,6 +34,10 @@ void setup_players(Game *g, bool single_player) {
         }
         getchar();
     }
+}
+
+void pick_starting_player(Game *g) {
+    g->player_turn = rand() % 2 == 0 ? PLAYER1 : PLAYER2;
 }
 
 void init_game_state(Game *g) {
@@ -261,6 +267,8 @@ void display_result(Game *g) {
 void print_game_board(Game *g) {
     char *board = (char *)g->board;
 
+    printf("\n");
+
     // Print column numbers
     printf("   1   2   3\n");
     for (int i = 0; i < 3; i++) {
@@ -283,7 +291,7 @@ void print_move(Game *g, Move *m) {
     printf("%s - '%c' made the move: ",
            g->player_turn == PLAYER1 ? g->player1 : g->player2,
            g->player_turn == PLAYER1 ? 'X' : 'O');
-    printf("(%d, %d)\n", m->r, m->c);
+    printf("(%d, %d)\n\n", m->r, m->c);
 }
 
 void print(char *str) {
