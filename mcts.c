@@ -103,8 +103,10 @@ static double simulate(Node *n, Player p) {
     while (is_game_over(game) == GAME_NOT_FINISHED) {
         int num_moves = 0;
         Move **moves = get_possible_moves(game, &num_moves);
-        make_move(game, moves[rand() % num_moves]);
-        game->player_turn = (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
+        bool done = make_move(game, moves[rand() % num_moves]);
+        if (done)
+            game->player_turn =
+                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
         destroy_list_of_moves(moves, num_moves);
     }
 

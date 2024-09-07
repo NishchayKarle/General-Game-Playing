@@ -98,8 +98,10 @@ static void simulate(Node *n, bool maximizing_player) {
 
     for (int i = 0; i < num_moves; i++) {
         Game *game = copy_game_state(n->game_state);
-        make_move(game, moves[i]);
-        game->player_turn = (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
+        bool done = make_move(game, moves[i]);
+        if (done)
+            game->player_turn =
+                (game->player_turn == PLAYER1) ? PLAYER2 : PLAYER1;
 
         Node *child = create_node(game, moves[i], n);
         n->children[i] = child;
