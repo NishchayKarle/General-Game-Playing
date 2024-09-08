@@ -5,7 +5,7 @@
 
 #include "game.h"
 
-#define BOARD_SIZE 7
+#define BOARD_SIZE 12
 
 typedef struct Move {
     int r, c;
@@ -184,7 +184,8 @@ GameState evaluate_game_state(Game *g) {
                 if (j <= BOARD_SIZE - 4) {
                     if (current == board[i * BOARD_SIZE + (j + 1)] &&
                         current == board[i * BOARD_SIZE + (j + 2)] &&
-                        current == board[i * BOARD_SIZE + (j + 3)]) {
+                        current == board[i * BOARD_SIZE + (j + 3)] &&
+                        current == board[i * BOARD_SIZE + (j + 4)]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
@@ -194,7 +195,8 @@ GameState evaluate_game_state(Game *g) {
                 if (i <= BOARD_SIZE - 4) {
                     if (current == board[(i + 1) * BOARD_SIZE + j] &&
                         current == board[(i + 2) * BOARD_SIZE + j] &&
-                        current == board[(i + 3) * BOARD_SIZE + j]) {
+                        current == board[(i + 3) * BOARD_SIZE + j] &&
+                        current == board[(i + 4) * BOARD_SIZE + j]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
@@ -204,7 +206,8 @@ GameState evaluate_game_state(Game *g) {
                 if (i <= BOARD_SIZE - 4 && j <= BOARD_SIZE - 4) {
                     if (current == board[(i + 1) * BOARD_SIZE + (j + 1)] &&
                         current == board[(i + 2) * BOARD_SIZE + (j + 2)] &&
-                        current == board[(i + 3) * BOARD_SIZE + (j + 3)]) {
+                        current == board[(i + 3) * BOARD_SIZE + (j + 3)] &&
+                        current == board[(i + 4) * BOARD_SIZE + (j + 4)]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
@@ -214,7 +217,8 @@ GameState evaluate_game_state(Game *g) {
                 if (i >= 3 && j <= BOARD_SIZE - 4) {
                     if (current == board[(i - 1) * BOARD_SIZE + (j + 1)] &&
                         current == board[(i - 2) * BOARD_SIZE + (j + 2)] &&
-                        current == board[(i - 3) * BOARD_SIZE + (j + 3)]) {
+                        current == board[(i - 3) * BOARD_SIZE + (j + 3)] &&
+                        current == board[(i - 4) * BOARD_SIZE + (j + 4)]) {
                         return current == 'X' ? GAME_WON_BY_PLAYER1
                                               : GAME_WON_BY_PLAYER2;
                     }
