@@ -162,7 +162,7 @@ void destroy_list_of_moves(Move **moves, int num_moves) {
     free(moves);
 }
 
-GameState evaluate_game_state(Game *g) {
+static GameState evaluate_game_state(Game *g) {
     char *board = (char *)g->board;
 
     // Check horizontal (rows)
@@ -231,6 +231,98 @@ GameState is_game_over(Game *g) {
     g->result = result;
 
     return result;
+}
+
+static double score_sequence(char *sequence, int length, char player,
+                             double min_score, double max_score) {
+    double score_range = max_score - min_score;
+
+    // Winning opportunity is very important
+    double THREE_IN_A_ROW = score_range * 0.5;
+    // Two-in-a-row is important, but less so
+    double TWO_IN_A_ROW = score_range * 0.1;
+    // Single pieces should have minimal influence
+    double ONE_IN_A_ROW = score_range * 0.01;
+
+    int count_player = 0;
+    int count_empty = 0;
+
+    for (int i = 0; i < length; i++) {
+        if (sequence[i] == player) count_player++;
+        if (sequence[i] == '.') count_empty++;
+    }
+
+    if (count_player == 3 && count_empty == 1) return THREE_IN_A_ROW;
+    if (count_player == 2 && count_empty == 2) return TWO_IN_A_ROW;
+    if (count_player == 1 && count_empty == 3) return ONE_IN_A_ROW;
+
+    return 0;
+};
+
+// TODO: change to handle score based on current player (rn, it's always for 'O')
+double board_score(Game *g, double min_score, double max_score) {
+    GameState result = is_game_over(g);
+
+    // If the game is over, return the maximum or minimum score accordingly
+    if (result == GAME_WON_BY_PLAYER1) {
+        return min_score;  // Player1 ('X') won, which is bad for Player2 ('O')
+    } else if (result == GAME_WON_BY_PLAYER2) {
+        return max_score;  // Player2 ('O') won, which is good for Player2
+    } else if (result == GAME_DRAWN) {
+        return 0.0;  // A draw results in a neutral score
+    }
+
+    char *board = (char *)g->board;
+    double score = 0.0;
+
+    // Horizontal scoring
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j <= COLUMNS - 4; j++) {
+            char sequence[4] = {
+                board[i * COLUMNS + j], board[i * COLUMNS + j + 1],
+                board[i * COLUMNS + j + 2], board[i * COLUMNS + j + 3]};
+            score += score_sequence(sequence, 4, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 4, 'X', min_score, max_score);
+        }
+    }
+
+    // Vertical scoring
+    for (int j = 0; j < COLUMNS; j++) {
+        for (int i = 0; i <= ROWS - 4; i++) {
+            char sequence[4] = {
+                board[i * COLUMNS + j], board[(i + 1) * COLUMNS + j],
+                board[(i + 2) * COLUMNS + j], board[(i + 3) * COLUMNS + j]};
+            score += score_sequence(sequence, 4, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 4, 'X', min_score, max_score);
+        }
+    }
+
+    // Diagonal scoring (bottom-left to top-right)
+    for (int i = 0; i <= ROWS - 4; i++) {
+        for (int j = 0; j <= COLUMNS - 4; j++) {
+            char sequence[4] = {board[i * COLUMNS + j],
+                                board[(i + 1) * COLUMNS + j + 1],
+                                board[(i + 2) * COLUMNS + j + 2],
+                                board[(i + 3) * COLUMNS + j + 3]};
+            score += score_sequence(sequence, 4, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 4, 'X', min_score, max_score);
+        }
+    }
+
+    // Diagonal scoring (top-left to bottom-right)
+    for (int i = 3; i < ROWS; i++) {
+        for (int j = 0; j <= COLUMNS - 4; j++) {
+            char sequence[4] = {board[i * COLUMNS + j],
+                                board[(i - 1) * COLUMNS + j + 1],
+                                board[(i - 2) * COLUMNS + j + 2],
+                                board[(i - 3) * COLUMNS + j + 3]};
+            score += score_sequence(sequence, 4, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 4, 'X', min_score, max_score);
+        }
+    }
+
+    // Return the computed score for the board
+    return score;
 }
 
 void display_result(Game *g) {

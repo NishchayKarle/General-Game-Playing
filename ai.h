@@ -43,3 +43,12 @@ void destroy_list_of_moves(Move **moves, int num_moves);
  * @return Move* Pointer to the best move determined by the AI.
  */
 Move *ai_make_move(Game *g);
+
+/**
+ * Function to get the board score for the given player based on strength of
+ * winning from current position.
+ *
+ * @param g Pointer to the game structure.
+ * @return double
+ */
+double board_score(Game *g, double min_score, double max_score);

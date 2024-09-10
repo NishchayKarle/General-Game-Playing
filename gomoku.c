@@ -5,7 +5,7 @@
 
 #include "game.h"
 
-#define BOARD_SIZE 12
+#define BOARD_SIZE 5
 
 typedef struct Move {
     int r, c;
@@ -180,8 +180,9 @@ GameState evaluate_game_state(Game *g) {
         for (int j = 0; j < BOARD_SIZE; j++) {
             char current = board[i * BOARD_SIZE + j];
             if (current == 'X' || current == 'O') {
-                // Check horizontal
-                if (j <= BOARD_SIZE - 4) {
+                // Check horizontal (ensure all are in the same row)
+                if (j <= BOARD_SIZE -
+                             5) {  // Ensure sequence doesn't go out of bounds
                     if (current == board[i * BOARD_SIZE + (j + 1)] &&
                         current == board[i * BOARD_SIZE + (j + 2)] &&
                         current == board[i * BOARD_SIZE + (j + 3)] &&
@@ -191,8 +192,9 @@ GameState evaluate_game_state(Game *g) {
                     }
                 }
 
-                // Check vertical
-                if (i <= BOARD_SIZE - 4) {
+                // Check vertical (ensure all are in the same column)
+                if (i <= BOARD_SIZE -
+                             5) {  // Ensure sequence doesn't go out of bounds
                     if (current == board[(i + 1) * BOARD_SIZE + j] &&
                         current == board[(i + 2) * BOARD_SIZE + j] &&
                         current == board[(i + 3) * BOARD_SIZE + j] &&
@@ -203,7 +205,8 @@ GameState evaluate_game_state(Game *g) {
                 }
 
                 // Check diagonal (top-left to bottom-right)
-                if (i <= BOARD_SIZE - 4 && j <= BOARD_SIZE - 4) {
+                if (i <= BOARD_SIZE - 5 &&
+                    j <= BOARD_SIZE - 5) {  // Ensure within bounds
                     if (current == board[(i + 1) * BOARD_SIZE + (j + 1)] &&
                         current == board[(i + 2) * BOARD_SIZE + (j + 2)] &&
                         current == board[(i + 3) * BOARD_SIZE + (j + 3)] &&
@@ -214,7 +217,7 @@ GameState evaluate_game_state(Game *g) {
                 }
 
                 // Check diagonal (bottom-left to top-right)
-                if (i >= 3 && j <= BOARD_SIZE - 4) {
+                if (i >= 4 && j <= BOARD_SIZE - 5) {  // Ensure within bounds
                     if (current == board[(i - 1) * BOARD_SIZE + (j + 1)] &&
                         current == board[(i - 2) * BOARD_SIZE + (j + 2)] &&
                         current == board[(i - 3) * BOARD_SIZE + (j + 3)] &&
@@ -242,6 +245,106 @@ GameState is_game_over(Game *g) {
     g->result = result;
 
     return result;
+}
+
+static double score_sequence(char *sequence, int length, char player,
+                             double min_score, double max_score) {
+    double score_range = max_score - min_score;
+
+    // Adjust the weights according to how critical the sequence is
+    double FOUR_IN_A_ROW = score_range * 0.8;   // Strong position
+    double THREE_IN_A_ROW = score_range * 0.4;  // Moderate influence
+    double TWO_IN_A_ROW = score_range * 0.1;    // Minimal influence
+    double ONE_IN_A_ROW = score_range * 0.01;   // Very small influence
+
+    int count_player = 0;
+    int count_empty = 0;
+
+    for (int i = 0; i < length; i++) {
+        if (sequence[i] == player) count_player++;
+        if (sequence[i] == '.') count_empty++;
+    }
+
+    if (count_player == 4 && count_empty == 1) return FOUR_IN_A_ROW;
+    if (count_player == 3 && count_empty == 2) return THREE_IN_A_ROW;
+    if (count_player == 2 && count_empty == 3) return TWO_IN_A_ROW;
+    if (count_player == 1 && count_empty == 4) return ONE_IN_A_ROW;
+
+    return 0;
+};
+
+// TODO: change to handle score based on current player (rn, it's always for
+// 'O')
+double board_score(Game *g, double min_score, double max_score) {
+    GameState result = is_game_over(g);
+
+    // If the game is over, return the appropriate score
+    if (result == GAME_WON_BY_PLAYER1) {
+        return min_score;  // Player1 ('X') won
+    } else if (result == GAME_WON_BY_PLAYER2) {
+        return max_score;  // Player2 ('O') won
+    } else if (result == GAME_DRAWN) {
+        return 0.0;  // A draw results in a neutral score
+    }
+
+    char *board = (char *)g->board;
+    double score = 0.0;
+
+    // Check all possible sequences of 5 on the board (horizontal, vertical,
+    // diagonal)
+
+    // Horizontal scoring
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j <= BOARD_SIZE - 5; j++) {
+            char sequence[5] = {
+                board[i * BOARD_SIZE + j], board[i * BOARD_SIZE + j + 1],
+                board[i * BOARD_SIZE + j + 2], board[i * BOARD_SIZE + j + 3],
+                board[i * BOARD_SIZE + j + 4]};
+            score += score_sequence(sequence, 5, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 5, 'X', min_score, max_score);
+        }
+    }
+
+    // Vertical scoring
+    for (int j = 0; j < BOARD_SIZE; j++) {
+        for (int i = 0; i <= BOARD_SIZE - 5; i++) {
+            char sequence[5] = {board[i * BOARD_SIZE + j],
+                                board[(i + 1) * BOARD_SIZE + j],
+                                board[(i + 2) * BOARD_SIZE + j],
+                                board[(i + 3) * BOARD_SIZE + j],
+                                board[(i + 4) * BOARD_SIZE + j]};
+            score += score_sequence(sequence, 5, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 5, 'X', min_score, max_score);
+        }
+    }
+
+    // Diagonal scoring (bottom-left to top-right)
+    for (int i = 0; i <= BOARD_SIZE - 5; i++) {
+        for (int j = 0; j <= BOARD_SIZE - 5; j++) {
+            char sequence[5] = {board[i * BOARD_SIZE + j],
+                                board[(i + 1) * BOARD_SIZE + j + 1],
+                                board[(i + 2) * BOARD_SIZE + j + 2],
+                                board[(i + 3) * BOARD_SIZE + j + 3],
+                                board[(i + 4) * BOARD_SIZE + j + 4]};
+            score += score_sequence(sequence, 5, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 5, 'X', min_score, max_score);
+        }
+    }
+
+    // Diagonal scoring (top-left to bottom-right)
+    for (int i = 4; i < BOARD_SIZE; i++) {
+        for (int j = 0; j <= BOARD_SIZE - 5; j++) {
+            char sequence[5] = {board[i * BOARD_SIZE + j],
+                                board[(i - 1) * BOARD_SIZE + j + 1],
+                                board[(i - 2) * BOARD_SIZE + j + 2],
+                                board[(i - 3) * BOARD_SIZE + j + 3],
+                                board[(i - 4) * BOARD_SIZE + j + 4]};
+            score += score_sequence(sequence, 5, 'O', min_score, max_score);
+            score -= score_sequence(sequence, 5, 'X', min_score, max_score);
+        }
+    }
+
+    return score;
 }
 
 void display_result(Game *g) {

@@ -70,7 +70,7 @@ static Node *select_best_child(Node *n, bool maximizing_player) {
     return best_child;
 }
 
-static void simulate(Node *n, bool maximizing_player) {
+static void simulate(Node *n, bool maximizing_player, int depth) {
     GameState result = is_game_over(n->game_state);
 
     switch (result) {
@@ -88,6 +88,12 @@ static void simulate(Node *n, bool maximizing_player) {
 
         default:
             break;
+    }
+
+    if (depth > MAX_DEPTH) {
+        n->score =
+            board_score(n->game_state, MINIMAX_REWARD_LOSE, MINIMAX_REWARD_WIN);
+        return;
     }
 
     int num_moves = 0;
@@ -112,7 +118,7 @@ static void simulate(Node *n, bool maximizing_player) {
 
         Node *child = create_node(game, moves[i], n);
         n->children[i] = child;
-        simulate(child, !maximizing_player);
+        simulate(child, !maximizing_player, depth + 1);
 
         if (maximizing_player) {
             n->score = MAX(n->score, child->score);
@@ -129,7 +135,7 @@ static void simulate(Node *n, bool maximizing_player) {
 Move *minimax(Game *g) {
     Node *root = create_node(g, NULL, NULL);
 
-    simulate(root, true);
+    simulate(root, true, 0);
 
     Node *best_child = select_best_child(root, true);
 

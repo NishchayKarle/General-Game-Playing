@@ -244,6 +244,25 @@ GameState is_game_over(Game *g) {
     return result;
 }
 
+double board_score(Game *g, double min_score, double max_score) {
+    GameState result = evaluate_game_state(g);
+    g->result = result;
+
+    switch (result) {
+        case GAME_WON_BY_PLAYER1:
+            return min_score;
+
+        case GAME_WON_BY_PLAYER2:
+            return max_score;
+
+        case GAME_DRAWN:
+            return (max_score - min_score) / 2.0;
+        
+        default:
+            return 0.0;
+    }
+}
+
 void display_result(Game *g) {
     switch (g->result) {
         case GAME_DRAWN:
