@@ -75,11 +75,11 @@ static void simulate(Node *n, bool maximizing_player) {
 
     switch (result) {
         case GAME_WON_BY_PLAYER1:
-            n->score = -1.0;
+            n->score = MINIMAX_REWARD_LOSE;
             return;
 
         case GAME_WON_BY_PLAYER2:
-            n->score = 1.0;
+            n->score = MINIMAX_REWARD_WIN;
             return;
 
         case GAME_DRAWN:
@@ -95,6 +95,13 @@ static void simulate(Node *n, bool maximizing_player) {
 
     n->num_children = num_moves;
     n->children = (Node **)malloc(sizeof(Node *) * num_moves);
+
+    // Initialize node score based on the player type
+    if (maximizing_player) {
+        n->score = INT_MIN;
+    } else {
+        n->score = INT_MAX;
+    }
 
     for (int i = 0; i < num_moves; i++) {
         Game *game = copy_game_state(n->game_state);
