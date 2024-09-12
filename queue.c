@@ -16,11 +16,12 @@ static void free_node(Node* node, void (*free_data)(void*)) {
     free(node);
 }
 
-Queue* create_queue() {
+Queue* create_queue(void* (*free_data)(void*)) {
     Queue* q = (Queue*)malloc(sizeof(*q));
 
     q->head = NULL;
     q->tail = NULL;
+    q->free_data = free_data;
 
     return q;
 }
@@ -61,6 +62,5 @@ void* front(Queue* queue) {
 
 void free_queue(Queue* queue) {
     while (!is_empty(queue)) dequeue(queue);
-
     free(queue);
 }

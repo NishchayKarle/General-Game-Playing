@@ -15,7 +15,7 @@ typedef struct Queue {
     void (*free_data)(void*);
 } Queue;
 
-Queue* create_queue();
+Queue* create_queue(void (*)(void*));
 
 bool is_empty(Queue*);
 
