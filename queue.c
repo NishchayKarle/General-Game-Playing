@@ -40,6 +40,7 @@ void enqueue(Queue* queue, void* data) {
     }
 
     queue->tail->next = node;
+    queue->tail = node;
 }
 
 void dequeue(Queue* queue) {
